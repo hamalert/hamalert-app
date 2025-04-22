@@ -1,0 +1,44 @@
+{
+  "devDependencies": {
+    "@havesource/cordova-plugin-push": "^4.0.0",
+    "cordova-android": "^13.0.0",
+    "cordova-browser": "^6.0.0",
+    "cordova-ios": "^7.1.0",
+    "cordova-plugin-add-swift-support": "^2.0.2",
+    "cordova-plugin-advanced-http": "^3.3.1",
+    "cordova-plugin-device-name": "^1.3.5",
+    "cordova-plugin-dialogs": "^2.0.2",
+    "cordova-plugin-file": "^8.0.1",
+    "cordova-plugin-globalization": "^1.11.0",
+    "cordova-plugin-inappbrowser": "^6.0.0",
+    "cordova-plugin-statusbar": "^4.0.0",
+    "cordova-plugin-theme-detection": "^1.3.0"
+  },
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-device-name": {},
+      "cordova-plugin-dialogs": {},
+      "cordova-plugin-globalization": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-inappbrowser": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-advanced-http": {
+        "ANDROIDBLACKLISTSECURESOCKETPROTOCOLS": "SSLv3,TLSv1"
+      },
+      "cordova-plugin-theme-detection": {},
+      "@havesource/cordova-plugin-push": {
+        "ANDROIDX_CORE_VERSION": "1.6.+",
+        "FCM_VERSION": "23.+",
+        "IOS_FIREBASE_MESSAGING_VERSION": "~> 8.1.1"
+      }
+    },
+    "platforms": [
+      "browser",
+      "android",
+      "ios"
+    ]
+  },
+  "dependencies": {
+    "cordova-plugin-device": "2.1.0"
+  }
+}

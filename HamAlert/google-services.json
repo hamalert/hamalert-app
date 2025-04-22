@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "854056214480",
+    "firebase_url": "https://hamalert-b6e91.firebaseio.com",
+    "project_id": "hamalert-b6e91",
+    "storage_bucket": "hamalert-b6e91.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:854056214480:android:8c53a2530ceee761",
+        "android_client_info": {
+          "package_name": "org.hamalert.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "854056214480-i65bv8orsn4id16i9vskqhmasl25k6au.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBna4lphpoM5WYzEXR5y8vagdjqs0YFjP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "854056214480-i65bv8orsn4id16i9vskqhmasl25k6au.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

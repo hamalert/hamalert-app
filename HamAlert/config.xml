@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget android-versionCode="1911057" id="org.hamalert.app" ios-CFBundleVersion="1059" version="1.9.3" xmlns="http://www.w3.org/ns/widgets">
+    <name>HamAlert</name>
+    <description>
+        Companion app for the HamAlert system to receive spot notifications.
+    </description>
+    <author email="info@hamalert.org" href="https://hamalert.org">
+        Manuel Kasper
+    </author>
+    <content src="index.html" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="android-minSdkVersion" value="24" />
+    <preference name="StatusBarStyle" value="default" />
+    <preference name="permissions" value="none" />
+    <preference name="SplashScreenDelay" value="0" />
+    <preference name="FadeSplashScreen" value="false" />
+    <preference name="FadeSplashScreenDuration" value="0" />
+    <preference name="GradlePluginKotlinEnabled" value="true" />
+    <preference name="GradlePluginKotlinVersion" value="1.7.10" />
+    <platform name="android">
+        <preference name="StatusBarOverlaysWebView" value="false" />
+        <icon background="res/icon/android/ldpi-background.png" density="ldpi" foreground="res/icon/android/ldpi-foreground.png" />
+        <icon background="res/icon/android/mdpi-background.png" density="mdpi" foreground="res/icon/android/mdpi-foreground.png" />
+        <icon background="res/icon/android/hdpi-background.png" density="hdpi" foreground="res/icon/android/hdpi-foreground.png" />
+        <icon background="res/icon/android/xhdpi-background.png" density="xhdpi" foreground="res/icon/android/xhdpi-foreground.png" />
+        <icon background="res/icon/android/xxhdpi-background.png" density="xxhdpi" foreground="res/icon/android/xxhdpi-foreground.png" />
+        <icon background="res/icon/android/xxxhdpi-background.png" density="xxxhdpi" foreground="res/icon/android/xxxhdpi-foreground.png" />
+        <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/icon/android/xxxhdpi-foreground.png" />
+        <resource-file src="google-services.json" target="app/google-services.json" />
+        <resource-file src="res/sounds/android/blip.mp3" target="app/src/main/res/raw/blip.mp3" />
+        <resource-file src="res/sounds/android/dx.mp3" target="app/src/main/res/raw/dx.mp3" />
+        <resource-file src="res/sounds/android/iota.mp3" target="app/src/main/res/raw/iota.mp3" />
+        <resource-file src="res/sounds/android/rbn.mp3" target="app/src/main/res/raw/rbn.mp3" />
+        <resource-file src="res/sounds/android/sota.mp3" target="app/src/main/res/raw/sota.mp3" />
+        <resource-file src="res/sounds/android/wwff.mp3" target="app/src/main/res/raw/wwff.mp3" />
+        <resource-file src="res/icon/notification-android/drawable-hdpi/notification.png" target="app/src/main/res/drawable-hdpi/notification.png" />
+        <resource-file src="res/icon/notification-android/drawable-mdpi/notification.png" target="app/src/main/res/drawable-mdpi/notification.png" />
+        <resource-file src="res/icon/notification-android/drawable-xhdpi/notification.png" target="app/src/main/res/drawable-xhdpi/notification.png" />
+        <resource-file src="res/icon/notification-android/drawable-xxhdpi/notification.png" target="app/src/main/res/drawable-xxhdpi/notification.png" />
+        <resource-file src="res/icon/notification-android/drawable-xxxhdpi/notification.png" target="app/src/main/res/drawable-xxxhdpi/notification.png" />
+        <hook src="remove_permissions.js" type="after_prepare" />
+    </platform>
+    <platform name="ios">
+        <icon height="57" src="res/icon/ios/Icon.png" width="57" />
+        <icon height="114" src="res/icon/ios/Icon@2x.png" width="114" />
+        <icon height="40" src="res/icon/ios/Icon-40.png" width="40" />
+        <icon height="80" src="res/icon/ios/Icon-40@2x.png" width="80" />
+        <icon height="50" src="res/icon/ios/Icon-Small-50.png" width="50" />
+        <icon height="100" src="res/icon/ios/Icon-Small-50@2x.png" width="100" />
+        <icon height="60" src="res/icon/ios/Icon-60.png" width="60" />
+        <icon height="120" src="res/icon/ios/Icon-60@2x.png" width="120" />
+        <icon height="180" src="res/icon/ios/Icon-60@3x.png" width="180" />
+        <icon height="64" src="res/icon/ios/Icon-64.png" width="64" />
+        <icon height="72" src="res/icon/ios/Icon-72.png" width="72" />
+        <icon height="144" src="res/icon/ios/Icon-72@2x.png" width="144" />
+        <icon height="76" src="res/icon/ios/Icon-76.png" width="76" />
+        <icon height="152" src="res/icon/ios/Icon-76@2x.png" width="152" />
+        <icon height="29" src="res/icon/ios/Icon-Small.png" width="29" />
+        <icon height="58" src="res/icon/ios/Icon-Small@2x.png" width="58" />
+        <icon height="87" src="res/icon/ios/Icon-Small@3x.png" width="87" />
+        <icon height="120" src="res/icon/ios/Icon-120.png" width="120" />
+        <icon height="152" src="res/icon/ios/Icon-152.png" width="152" />
+        <icon height="167" src="res/icon/ios/Icon-83.5@2x.png" width="167" />
+        <icon height="1024" src="res/icon/ios/Icon-1024.jpg" width="1024" />
+        <splash src="res/screen/ios/Default@2x~universal~anyany.png" />
+        <resource-file src="res/sounds/ios/blip.caf" />
+        <resource-file src="res/sounds/ios/dx.caf" />
+        <resource-file src="res/sounds/ios/iota.caf" />
+        <resource-file src="res/sounds/ios/rbn.caf" />
+        <resource-file src="res/sounds/ios/sota.caf" />
+        <resource-file src="res/sounds/ios/wwff.caf" />
+    </platform>
+    <access origin="*" />
+    <allow-navigation href="https://hamalert.org/*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+    </platform>
+    <plugin name="cordova-plugin-device-name" spec="^1.3.5" />
+    <plugin name="cordova-plugin-dialogs" spec="^2.0.2" />
+    <plugin name="cordova-plugin-globalization" spec="^1.11.0" />
+</widget>

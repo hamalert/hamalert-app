@@ -1,0 +1,194 @@
+/* Fix for https://stackoverflow.com/questions/63403890/white-space-at-the-bottom-of-my-cordova-app-on-ios */
+html, body {
+	width: 100vw;
+	height: 100vh;
+}
+
+/* Logo positioning in toolbar */
+ons-toolbar img {
+	height: 32px;
+	width: auto;
+	content:url('../img/hamalert.png');
+}
+ons-toolbar img.ios {
+	margin-top: 4px;
+}
+ons-toolbar img.android {
+	margin-top: 12px;
+}
+body.dark-mode ons-toolbar img {
+	content:url('../img/hamalert_light.png');
+}
+
+/* iPhone universal Notch/Dynamic Island padding fix */
+:root {
+	--iphonex-safe-area-inset-top-portrait: calc(env(safe-area-inset-top) - 3px);
+}
+
+a {
+	color: #1b83de;
+	text-decoration: none;
+}
+body.dark-mode a {
+	color: #65b9ff;
+}
+
+/* Login dialog username uppercasing (except placeholder) */
+#loginDialog #username {
+	text-transform: uppercase;
+}
+body.dark-mode #loginDialog p {
+	color: #eee;
+}
+::-webkit-input-placeholder {
+    text-transform: none;
+}
+
+/* Refresh button rotation centering */
+#refreshIcon {
+	transform-origin: 50% 47%;
+}
+
+/* Spot list styling */
+#spots .list__header {
+	padding-top: 21px !important;
+}
+
+ons-list-item.spot {
+	font-size: 90%;
+}
+ons-list-item.spot .left {
+	font-size: 80%;
+	color: #777;
+	text-align: center;
+	align-items: flex-start;
+	padding-top: 15px;
+	min-width: 58px;
+}
+ons-list-item.spot .left .spotTag {
+    background: #777;
+    border-radius: 8px;
+    padding: 2px 5px;
+    color: white;
+    font-weight: bold;
+    line-height: 20px;
+    font-size: 90%;
+}
+ons-list-item.spot .center {
+	padding-top: 13px;
+	padding-bottom: 13px;
+}
+ons-list-item.spot .delete {
+	display: none;
+}
+ons-list-item.spot .delete button {
+	background: #fc3e38;
+	color: #fff;
+	text-align: center;
+	width: 60px !important;
+	height: 100%;
+	border: 1px solid #cc0000;
+}
+ons-list-item.spot.daychange {
+	border-top: 5px solid #aaa;
+}
+.spotTag {
+	background: #999999 !important;
+}
+.spotTag.sota {
+	background: #9E1F18 !important;
+}
+.spotTag.rbn {
+	background: #669217 !important;
+}
+.spotTag.dx {
+	background: #105960 !important;
+}
+.spotTag.wwff, .spotTag.pota {
+	background: #724b25 !important;
+}
+.spotTag.pskr {
+	background: #fffd38 !important;
+	color: #000 !important;
+}
+.spotTag.iota {
+	background: #e2940d !important;
+}
+ons-list-item.spot.new {
+	background: #eeffff;
+}
+body.dark-mode ons-list-item.spot.new {
+	background: #033;
+}
+ons-list-item.spot.new .list__item__title {
+	font-weight: bold;
+}
+
+#nospots {
+	color: #777;
+	font-style: italic;
+	font-size: 90%;
+}
+
+#notrigger div div {
+	padding-left: 27px;
+	padding-right: 8px;
+	position: relative;
+}
+
+#notrigger div ons-icon {
+	position: absolute;
+	z-index: 1;
+}
+
+.spotDetails table {
+	margin: 10px 0 0 0;
+	border-collapse: collapse;
+}
+.spotDetails table th {
+	white-space: nowrap;
+	background: #f7f7f7;
+}
+body.dark-mode .spotDetails table th {
+	background: #555;
+}
+.spotDetails table th, .spotDetails table td {
+	border: 1px solid #eee;
+	padding: 3px 10px 3px 4px;
+}
+body.dark-mode .spotDetails table th, body.dark-mode .spotDetails table td {
+	border: 1px solid #666;
+}
+body.dark-mode .spot-time {
+	color: #aaa;
+}
+
+.muteButtons {
+	border: 1px solid #666;
+	border-radius: 5px;
+	overflow: hidden;
+	margin-top: 1em;
+	display: inline-block;
+}
+.muteButtons .muteTitle {
+	background: #666;
+	color: white;
+	font-weight: bold;
+	padding: 3px;
+}
+
+/* Username in sidebar */
+#usernameItem {
+	color: #999;
+	font-weight: bold;
+}
+
+#clearMutes, #deleteAccount {
+	color: #cc0000;
+}
+
+.list-footer {
+	padding: 1em 0.5em 0.5em 0.7em;
+	font-size: 9pt;
+	color: #777;
+}

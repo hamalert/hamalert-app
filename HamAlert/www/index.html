@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="msapplication-tap-highlight" content="no" />
+	<meta name="viewport" content="viewport-fit=cover, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+	
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com https://hamalert.org; style-src 'self' 'unsafe-inline'; media-src *" />
+
+	<link rel="stylesheet" href="css/onsenui.min.css"/>
+	<link rel="stylesheet" id="css-components" href="css/onsen-css-components.min.css"/>
+	<link rel="stylesheet" href="css/index.css"/>
+	<script type="text/javascript" src="js/es6-promise.auto.min.js"></script>
+	<script type="text/javascript" src="js/onsenui.min.js"></script>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/sprintf.min.js"></script>
+	<script type="text/javascript" src="js/moment.min.js"></script>
+	<title>HamAlert</title>
+</head>
+
+<body>
+	<ons-splitter>
+		<ons-splitter-side id="menu" side="left" width="220px" collapse>
+			<ons-page>
+				<ons-list>
+					<ons-list-item id="usernameItem">
+						<span id="usernameDisplay">not logged in</span>
+					</ons-list-item>
+					<ons-list-item onclick="goTriggers()" tappable>
+						Triggers
+					</ons-list-item>
+					<ons-list-item onclick="goLimits()" tappable>
+						Limits
+					</ons-list-item>
+					<ons-list-item onclick="goDestinations()" tappable>
+						Destinations
+					</ons-list-item>
+					<ons-list-item onclick="goSettings()" tappable>
+						Settings
+					</ons-list-item>
+					<ons-list-item onclick="doLogout()" tappable>
+						Logout
+					</ons-list-item>
+				</ons-list>
+			</ons-page>
+		</ons-splitter-side>
+		<ons-splitter-content>
+			<ons-navigator id="content" page="home.html">
+		</ons-splitter-content>
+	</ons-splitter>
+	
+	<template id="home.html">
+		<ons-page>
+			<ons-toolbar>
+				<div class="left">
+					<ons-toolbar-button onclick="openMenu()">
+						<ons-icon icon="md-menu"></ons-icon>
+					</ons-toolbar-button>
+				</div>
+				<div class="center">
+					<ons-if platform="android">
+						<img class="android" src="img/hamalert.png" />
+					</ons-if>
+					
+					<ons-if platform="ios other">
+						<img class="ios" src="img/hamalert.png" />
+					</ons-if>
+				</div>
+				<div class="right">
+					<ons-toolbar-button onclick="reloadSpots()">
+						<ons-icon id="refreshIcon" icon="ion-md-refresh"></ons-icon>
+					</ons-toolbar-button>
+				</div>
+			</ons-toolbar>
+
+			<ons-list id="spots">
+				<ons-list-header>Latest spots</ons-list-header>
+				<ons-list-item id="nospots" style="display: none">
+					<div class="center">
+						No spots in the last 24 hours.
+					</div>
+				</ons-list-item>
+				<ons-list-item id="notrigger" style="display: none">
+					<div class="center">
+						<ons-icon icon="fa-exclamation-triangle"></ons-icon>
+						<div>You don't have any triggers with the “App” action enabled.</div>
+					</div>
+				</ons-list-item>
+			</ons-list>
+		</ons-page>
+	</template>
+	
+	<template id="settings.html">
+		<ons-page>
+			<ons-toolbar>
+				<div class="left"><ons-back-button>Spots</ons-back-button></div>
+				<div class="center">Settings</div>
+			</ons-toolbar>
+
+			<ons-list>
+				<ons-list-item>
+					<div class="center">
+						Push
+					</div>
+					<div class="right">
+						<ons-switch id="enablePush" onchange="updatePushSettings()"></ons-switch>
+					</div>
+				</ons-list-item>
+				
+				<div id="sound-settings">
+					<ons-list-header>Sound</ons-list-header>
+					<ons-list-item tappable>
+						<label class="left">
+							<ons-radio name="sound" input-id="sound-default" value="default" onchange="updatePushSettings()"></ons-radio>
+						</label>
+						<label for="sound-default" class="center">
+							Default
+						</label>
+					</ons-list-item>
+					<ons-list-item tappable>
+						<label class="left">
+							<ons-radio name="sound" input-id="sound-blip" value="blip" onchange="updatePushSettings()"></ons-radio>
+						</label>
+						<label for="sound-blip" class="center">
+							Blip (short)
+						</label>
+					</ons-list-item>
+					<ons-list-item tappable>
+						<label class="left">
+							<ons-radio name="sound" input-id="sound-morse" value="morse" onchange="updatePushSettings()"></ons-radio>
+						</label>
+						<label for="sound-morse" class="center">
+							Morse
+						</label>
+					</ons-list-item>
+				</div>
+			</ons-list>
+
+			<ons-list style="margin-top: 1.5em">				
+				<div>
+					<ons-list-header>Time display</ons-list-header>
+					<ons-list-item tappable>
+						<label class="left">
+							<ons-radio name="time" input-id="time-utc" value="utc" onchange="updateTimeSettings()"></ons-radio>
+						</label>
+						<label for="time-utc" class="center">
+							UTC
+						</label>
+					</ons-list-item>
+					<ons-list-item tappable>
+						<label class="left">
+							<ons-radio name="time" input-id="time-local" value="local" onchange="updateTimeSettings()"></ons-radio>
+						</label>
+						<label for="time-local" class="center">
+							Local
+						</label>
+					</ons-list-item>
+				</div>
+			</ons-list>
+			
+			<ons-list style="margin-top: 1.5em">
+				<ons-list-header>Mute duration</ons-list-header>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-600" value="600" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-600" class="center">
+						10 minutes
+					</label>
+				</ons-list-item>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-1800" value="1800" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-1800" class="center">
+						30 minutes
+					</label>
+				</ons-list-item>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-3600" value="3600" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-3600" class="center">
+						1 hour
+					</label>
+				</ons-list-item>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-7200" value="7200" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-7200" class="center">
+						2 hours
+					</label>
+				</ons-list-item>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-21600" value="21600" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-21600" class="center">
+						6 hours
+					</label>
+				</ons-list-item>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-43200" value="43200" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-43200" class="center">
+						12 hours
+					</label>
+				</ons-list-item>
+				<ons-list-item tappable>
+					<label class="left">
+						<ons-radio name="muteTtl" input-id="muteTtl-86400" value="86400" onchange="updateMuteSettings()"></ons-radio>
+					</label>
+					<label for="muteTtl-86400" class="center">
+						24 hours
+					</label>
+				</ons-list-item>
+				
+				<ons-list-item id="clearMutes" tappable onclick="clearMutes()">
+					<div class="center">
+						Clear mutes
+					</div>
+				</ons-list-item>
+			</ons-list>
+
+			<div class="list-footer">Blip sound attribution: Marianne Gagnon</div>
+
+			<ons-list style="margin-top: 1.5em">
+				<ons-list-item id="deleteAccount" tappable onclick="goDeleteAccount()">
+					<div class="center">
+						Delete account
+					</div>
+				</ons-list-item>
+			</ons-list>
+		</ons-page>
+	</template>
+	
+	<ons-dialog id="loginDialog">
+		<div style="text-align: center; padding: 10px;">
+			<p>Please enter your HamAlert username and password.</p>
+			<p>
+				<ons-input input-id="username" modifier="underbar" placeholder="Username"></ons-input>
+			</p>
+			<p>
+				<ons-input input-id="password" modifier="underbar" type="password" placeholder="Password"></ons-input>
+			</p>
+			<p style="margin-top: 30px;">
+				<ons-button onclick="doLogin()">Login</ons-button>
+			</p>
+			<p>
+				<a href="#" onclick="goRegister()">Create a HamAlert account</a>
+			</p>
+			<p>
+				<a href="#" onclick="goForgotPassword()" style="font-size: 0.8em">Forgot password</a>
+			</p>
+			<p>
+				<a href="#" onclick="goPrivacy()" style="font-size: 0.8em">Privacy Policy</a>
+			</p>
+		</div>
+	</ons-dialog>
+	
+	<ons-modal id="loading" direction="up">
+		<div style="text-align: center">
+			<p>
+				<ons-icon icon="md-spinner" size="28px" spin></ons-icon> Loading...
+			</p>
+		</div>
+	</ons-modal>
+	
+	<script type="text/javascript" src="cordova.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+</body>
+
+</html>
