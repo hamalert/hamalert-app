@@ -107,6 +107,9 @@ ons-list-item.spot.daychange {
 .spotTag.wwff, .spotTag.pota {
 	background: #724b25 !important;
 }
+.spotTag.wwbota {
+	background: #2c39aa !important;
+}
 .spotTag.pskr {
 	background: #fffd38 !important;
 	color: #000 !important;
