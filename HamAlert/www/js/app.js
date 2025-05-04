@@ -118,6 +118,7 @@ ons.ready(function() {
 		$(e.target).parents('ons-list-item.spot').find('.delete').show();
 	});
 	
+	showAppVersion();
 	checkLogin();
 	reloadSpots();
 });
@@ -688,6 +689,14 @@ function goDeleteAccount() {
 	goInAppBrowserWithLogin('/account_delete');
 }
 
+function goSupport() {
+	window.open('https://forum.hamalert.org/', '_system');
+}
+
+function goGitHub() {
+	window.open('https://github.com/hamalert', '_system');
+}
+
 function goInAppBrowserWithLogin(goto) {
 	var username = localStorage.getItem('username');
 	var password = localStorage.getItem('password');
@@ -860,4 +869,12 @@ function setupThemeDetection() {
 		(error) => {}
 	);
 	setTimeout(setupThemeDetection, 1000);
+}
+
+function showAppVersion() {
+	if (cordova.getAppVersion) {
+		cordova.getAppVersion.getVersionNumber().then(function (version) {
+			$('#appversion').text('Version ' + version);
+		});
+	}
 }

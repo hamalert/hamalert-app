@@ -44,6 +44,17 @@
 						Logout
 					</ons-list-item>
 				</ons-list>
+				<ons-list>
+					<ons-list-header>Support</ons-list-header>
+					<ons-list-item onclick="goSupport()" tappable>
+						Forum
+					</ons-list-item>
+					<ons-list-item id="githubItem" onclick="goGitHub()" tappable>
+						GitHub
+						<div><small>for bugs/feature requests</small></div>
+					</ons-list-item>
+				</ons-list>
+				<div id="appversion"></div>
 			</ons-page>
 		</ons-splitter-side>
 		<ons-splitter-content>

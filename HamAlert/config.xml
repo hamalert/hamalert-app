@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget android-versionCode="1911057" id="org.hamalert.app" ios-CFBundleVersion="1059" version="1.9.3" xmlns="http://www.w3.org/ns/widgets">
+<widget android-versionCode="1941060" id="org.hamalert.app" ios-CFBundleVersion="1060" version="1.9.4" xmlns="http://www.w3.org/ns/widgets">
     <name>HamAlert</name>
     <description>
         Companion app for the HamAlert system to receive spot notifications.
@@ -16,7 +16,7 @@
     <preference name="FadeSplashScreen" value="false" />
     <preference name="FadeSplashScreenDuration" value="0" />
     <preference name="GradlePluginKotlinEnabled" value="true" />
-    <preference name="GradlePluginKotlinVersion" value="1.7.10" />
+    <preference name="GradlePluginKotlinVersion" value="1.8.0" />
     <platform name="android">
         <preference name="StatusBarOverlaysWebView" value="false" />
         <icon background="res/icon/android/ldpi-background.png" density="ldpi" foreground="res/icon/android/ldpi-foreground.png" />

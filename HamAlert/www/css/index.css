@@ -187,8 +187,18 @@ body.dark-mode .spot-time {
 	color: #cc0000;
 }
 
+#githubItem small {
+	color: #777;
+}
+
 .list-footer {
 	padding: 1em 0.5em 0.5em 0.7em;
 	font-size: 9pt;
 	color: #777;
+}
+
+#appversion {
+	padding: 1em;
+	color: #777;
+	font-size: 0.8em;
 }
