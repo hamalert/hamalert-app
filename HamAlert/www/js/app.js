@@ -42,6 +42,13 @@ var spotDetailsMap = {
 		else
 			return [spot.wwffProgram.toUpperCase(), htmlEscape(text)];
 	},
+	wwbotaRef: function(spot) {
+		var text = spot.wwbotaRef;
+		if (spot.wwbotaName) {
+			text += " (" + spot.wwbotaName + ")";
+		}
+		return ['Bunker', htmlEscape(text)];
+	},
 	iotaGroupRef: function(spot) {
 		var text = spot.iotaGroupRef;
 		if (spot.iotaGroupName) {
@@ -231,6 +238,9 @@ function formatSpots() {
 			else
 				spotTag = 'wwff';
 			title += " in " + spot.wwffRef;
+		} else if (spot.wwbotaRef) {
+			spotTag = 'wwbota';
+			title += " in " + spot.wwbotaRef;
 		} else if (spot.iotaGroupRef) {
 			spotTag = 'iota';
 			title += " on " + spot.iotaGroupRef;
