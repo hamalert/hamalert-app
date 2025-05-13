@@ -210,8 +210,16 @@ function deleteSpot(id) {
 }
 
 function deleteAllSpots() {
-	apiPost('/api/deleteSpot', {id: '*'}, function() {
-		reloadSpots();
+	let confirmDlg = ons.notification.confirm("Are you sure you want to delete all spots?", {
+		buttonLabels: ['Delete all', 'Cancel']
+	});
+	confirmDlg.then(function(index) {
+		if (index != 0)
+			return;
+		
+		apiPost('/api/deleteSpot', {id: '*'}, function() {
+			reloadSpots();
+		});
 	});
 }
 
