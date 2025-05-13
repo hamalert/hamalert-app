@@ -141,6 +141,15 @@ ons-list-item.spot.new .list__item__title {
 	z-index: 1;
 }
 
+#deleteall {
+	background: none;
+}
+#deleteall ons-button {
+	color: #cc0000;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
 .spotDetails table {
 	margin: 10px 0 0 0;
 	border-collapse: collapse;

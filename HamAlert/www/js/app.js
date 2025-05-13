@@ -178,6 +178,12 @@ function reloadSpots() {
 		} else {
 			$('#notrigger').hide();
 		}
+
+		if (spots.length > 0) {
+			$('#deleteall').show();
+		} else {
+			$('#deleteall').hide();
+		}
 		
 		formatSpots();
 		localStorage.setItem('cachedSpots', JSON.stringify(spots));
@@ -201,6 +207,12 @@ function reloadSpots() {
 
 function deleteSpot(id) {
 	apiPost('/api/deleteSpot', {id: id});
+}
+
+function deleteAllSpots() {
+	apiPost('/api/deleteSpot', {id: '*'}, function() {
+		reloadSpots();
+	});
 }
 
 function formatSpots() {
