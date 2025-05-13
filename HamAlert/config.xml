@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget android-versionCode="1941060" id="org.hamalert.app" ios-CFBundleVersion="1060" version="1.9.4" xmlns="http://www.w3.org/ns/widgets">
+<widget android-versionCode="1941061" id="org.hamalert.app" ios-CFBundleVersion="1061" version="1.9.4" xmlns="http://www.w3.org/ns/widgets">
     <name>HamAlert</name>
     <description>
         Companion app for the HamAlert system to receive spot notifications.
