@@ -332,7 +332,7 @@ function spotSubtitleHtml(spot) {
 		if (spot.comment && spot.comment != '(null)')
 			subtitle += ": " + htmlEscape(spot.comment);
 		return subtitle;
-	} else if (spot.source == 'pota' && spot.wwffName) {
+	} else if ((spot.source == 'pota' || spot.source == 'wwff') && spot.wwffName) {
 		var subtitle = htmlEscape(spot.wwffName);
 		if (spot.comment && spot.comment != '(null)')
 			subtitle += ": " + htmlEscape(spot.comment);
