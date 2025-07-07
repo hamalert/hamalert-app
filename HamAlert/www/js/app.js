@@ -883,10 +883,16 @@ function setupThemeDetection() {
 					$('#css-components').attr('href', "css/dark-onsen-css-components.min.css");
 					$('body').addClass('dark-mode');
 					StatusBar.styleLightContent();
+					if (cordova.platformId == 'android') {
+						StatusBar.backgroundColorByHexString("#000");
+					}
 				} else {
 					$('#css-components').attr('href', "css/onsen-css-components.min.css");
 					$('body').removeClass('dark-mode');
 					StatusBar.styleDefault();
+					if (cordova.platformId == 'android') {
+						StatusBar.backgroundColorByHexString("#fff");
+					}
 				}
 				lastDarkMode = success.value;
 			}
