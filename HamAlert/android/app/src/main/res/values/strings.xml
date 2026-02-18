@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HamAlert</string>
+    <string name="title_activity_main">HamAlert</string>
+    <string name="package_name">org.hamalert.app</string>
+    <string name="custom_url_scheme">org.hamalert.app</string>
+    <string name="asset_statements" translatable="false">
+[{
+  \"include\": \"https://hamalert.org/.well-known/assetlinks.json\"
+}]
+    </string>
+</resources>
