@@ -114,6 +114,9 @@ ons-list-item.spot.daychange {
 .spotTag.iota {
 	background: #e2940d !important;
 }
+.spotTag.dstar {
+	background: #4a3fa8 !important;
+}
 ons-list-item.spot.new {
 	background: #eeffff;
 }

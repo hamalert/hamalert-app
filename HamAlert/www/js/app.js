@@ -49,12 +49,23 @@ var spotDetailsMap = {
 		}
 		return ['IOTA', htmlEscape(text)];
 	},
+	dvEvent: function(spot) {
+		return ['Event', (spot.dvEvent == 'linked') ? 'Linked' : 'Active'];
+	},
+	dvNode: 'Repeater / node',
+	dvReflector: 'Reflector',
+	dvSuffix: 'Suffix',
+	dvDuration: function(spot) {
+		return ['Duration', sprintf("%.1f s", spot.dvDuration)];
+	},
 	band: 'Band',
 	frequency: 'Frequency',
 	mode: function(spot) {
 		var mode;
 		if (spot.modeDetail) {
 			mode = spot.modeDetail.toUpperCase();
+		} else if (spot.mode == 'dstar') {
+			mode = 'D-STAR';
 		} else if (spot.mode) {
 			mode = spot.mode.toUpperCase();
 		}
@@ -260,15 +271,28 @@ function formatSpots() {
 			spotTag = 'dx';
 		} else if (spot.source == 'pskreporter') {
 			spotTag = 'pskr';
+		} else if (spot.source == 'dstar') {
+			spotTag = 'dstar';
 		}
 		
-		title += " (" + formatFrequency(spot.frequency);
-		if (spot.modeDetail) {
-			title += " " + spot.modeDetail.toUpperCase();
-		} else if (spot.mode) {
-			title += " " + spot.mode.toUpperCase();
+		if (spot.source == 'dstar' || spot.frequency === undefined || spot.frequency === null) {
+			// D-STAR presence spot: no frequency/band
+			if (spot.dvEvent == 'linked') {
+				title += " linked " + htmlEscape(spot.dvNode) + " to " + htmlEscape(spot.dvReflector);
+			} else if (spot.dvReflector) {
+				title += " on " + htmlEscape(spot.dvReflector) + " via " + htmlEscape(spot.dvNode);
+			} else if (spot.dvNode) {
+				title += " on " + htmlEscape(spot.dvNode);
+			}
+		} else {
+			title += " (" + formatFrequency(spot.frequency);
+			if (spot.modeDetail) {
+				title += " " + spot.modeDetail.toUpperCase();
+			} else if (spot.mode) {
+				title += " " + spot.mode.toUpperCase();
+			}
+			title += ")";
 		}
-		title += ")";
 
 		if (lastReceivedDate && lastReceivedDate.substr(0, 10) != spot.receivedDate.substr(0, 10)) {
 			itemClass += " daychange";
@@ -337,6 +361,15 @@ function spotSubtitleHtml(spot) {
 		if (spot.comment && spot.comment != '(null)')
 			subtitle += ": " + htmlEscape(spot.comment);
 		return subtitle;
+	} else if (spot.source == 'dstar') {
+		var parts = [];
+		if (spot.comment && spot.comment != '(null)')
+			parts.push(htmlEscape(spot.comment));
+		if (spot.dvSuffix)
+			parts.push(htmlEscape(spot.dvSuffix));
+		if (parts.length > 0)
+			return parts.join(" \u00b7 ");
+		return htmlEscape(spot.rawText);
 	} else {
 		return htmlEscape(spot.rawText);
 	}
@@ -374,7 +407,9 @@ function spotDetailsHtml(spot) {
 
 	html += '<div class="muteButtons"><div class="muteTitle">Mute</div>';
 	html += '<ons-button data-mutetype="callsign" modifier="quiet">Callsign</ons-button>';
-	html += '<ons-button data-mutetype="callsignBand" modifier="quiet">Callsign + Band</ons-button>';
+	if (spot.band) {
+		html += '<ons-button data-mutetype="callsignBand" modifier="quiet">Callsign + Band</ons-button>';
+	}
 	
 	if (spot.summitRef) {
 		html += '<ons-button data-mutetype="callsignSummit" modifier="quiet">Callsign + Summit</ons-button>';
