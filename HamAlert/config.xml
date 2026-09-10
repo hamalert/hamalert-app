@@ -72,6 +72,9 @@
         <resource-file src="res/sounds/ios/sota.caf" />
         <resource-file src="res/sounds/ios/wwff.caf" />
     </platform>
+    <platform name="browser">
+        <hook src="hooks/browser_csp.js" type="after_prepare" />
+    </platform>
     <access origin="*" />
     <allow-navigation href="https://hamalert.org/*" />
     <allow-intent href="http://*/*" />

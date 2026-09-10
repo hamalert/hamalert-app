@@ -8,6 +8,37 @@ var spots = [];
 var markAllSpotsAsSeen = true;
 var sounds = ['default','blip','sota','wwff','iota','rbn','dx'];
 var showingAlert = false;
+var apiBase = 'https://hamalert.org';
+
+function isBrowserPlatform() {
+	return typeof cordova !== 'undefined' && cordova.platformId === 'browser';
+}
+
+function initApiBase() {
+	// In browser dev mode (cordova run browser), point the app at a local
+	// HamAlert web app instance instead of the production server.
+	if (typeof cordova === 'undefined' || cordova.platformId !== 'browser') {
+		return;
+	}
+
+	var stored = localStorage.getItem('apiBase');
+	if (stored) {
+		apiBase = stored;
+	} else {
+		var match = /[?&]api=([^&]+)/.exec(window.location.search);
+		if (match) {
+			apiBase = decodeURIComponent(match[1]);
+			localStorage.setItem('apiBase', apiBase);
+		} else {
+			apiBase = 'http://localhost:8081';
+		}
+	}
+	console.log('Browser dev mode: using API base ' + apiBase);
+}
+
+// cordova.js (loaded before this script) sets cordova.platformId synchronously,
+// so this can run immediately without waiting for deviceready.
+initApiBase();
 
 var spotDetailsMap = {
 	fullCallsign: function(spot) {
@@ -62,10 +93,10 @@ var spotDetailsMap = {
 	frequency: 'Frequency',
 	mode: function(spot) {
 		var mode;
-		if (spot.modeDetail) {
-			mode = spot.modeDetail.toUpperCase();
-		} else if (spot.mode == 'dstar') {
+		if (spot.mode == 'dstar') {
 			mode = 'D-STAR';
+		} else if (spot.modeDetail) {
+			mode = spot.modeDetail.toUpperCase();
 		} else if (spot.mode) {
 			mode = spot.mode.toUpperCase();
 		}
@@ -135,6 +166,7 @@ ons.ready(function() {
 });
 
 document.addEventListener('deviceready', function() {
+	initApiBase();
 	setupThemeDetection();
 	setupPush();
 }, false);
@@ -517,6 +549,16 @@ function resetLogin() {
 }
 
 function setupPush() {
+	if (!window.PushNotification || isBrowserPlatform()) {
+		// The cordova-browser platform ships a PushNotification shim that
+		// tries to register a real Service Worker / Web Push subscription
+		// (and can even trigger a page reload when that fails), which isn't
+		// useful in dev mode and has no server-side counterpart here, so
+		// skip it entirely.
+		console.log('Push notifications not available (browser dev mode) - skipping setupPush');
+		return;
+	}
+
 	push = PushNotification.init({
 		"android": {
 			"senderID": "854056214480"
@@ -604,6 +646,9 @@ function setupPush() {
 }
 
 function updatePushToken() {
+	if (!window.PushNotification || isBrowserPlatform())
+		return;
+
 	var pushToken = localStorage.getItem('registrationId');
 	if (!pushToken || !loadCredentials())
 		return;
@@ -722,15 +767,15 @@ function updateTimeSettings() {
 }
 
 function goRegister() {
-	cordova.InAppBrowser.open('https://hamalert.org/register?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
+	cordova.InAppBrowser.open(apiBase + '/register?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
 }
 
 function goPrivacy() {
-	cordova.InAppBrowser.open('https://hamalert.org/privacy?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
+	cordova.InAppBrowser.open(apiBase + '/privacy?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
 }
 
 function goForgotPassword() {
-	cordova.InAppBrowser.open('https://hamalert.org/forgotpass?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
+	cordova.InAppBrowser.open(apiBase + '/forgotpass?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
 }
 
 function goTriggers() {
@@ -761,7 +806,7 @@ function goInAppBrowserWithLogin(goto) {
 	var username = localStorage.getItem('username');
 	var password = localStorage.getItem('password');
 
-	var path = 'https://hamalert.org/login?';
+	var path = apiBase + '/login?';
 	path += 'username=' + encodeURIComponent(username);
 	path += '&password=' + encodeURIComponent(password);
 	path += '&goto=' + encodeURIComponent(goto + '?hidenav=1');
@@ -805,7 +850,7 @@ function goSettings() {
 }
 
 function getDeviceName() {
-	if (cordova.plugins.deviceName)
+	if (cordova.plugins && cordova.plugins.deviceName)
 		return cordova.plugins.deviceName.name;
 	else
 		return "Unknown";
@@ -832,7 +877,7 @@ function formatTime(timeUtc) {
 }
 
 function apiGet(path, params, successCallback, errorCallback, silent) {
-	cordova.plugin.http.get('https://hamalert.org' + path, stringifyValues(params), {}, function (response) {
+	cordova.plugin.http.get(apiBase + path, stringifyValues(params), {}, function (response) {
 		if (successCallback) {
 			successCallback(JSON.parse(response.data));
 		}
@@ -860,7 +905,7 @@ function apiGet(path, params, successCallback, errorCallback, silent) {
 }
 
 function apiPost(path, data, successCallback, errorCallback, silent) {
-	cordova.plugin.http.post('https://hamalert.org' + path, stringifyValues(data), {}, function (response) {
+	cordova.plugin.http.post(apiBase + path, stringifyValues(data), {}, function (response) {
 		if (successCallback) {
 			successCallback(JSON.parse(response.data));
 		}
@@ -911,22 +956,31 @@ function loadCredentials() {
 
 let lastDarkMode = false;
 function setupThemeDetection() {
+	if (!cordova.plugins || !cordova.plugins.ThemeDetection) {
+		console.log('ThemeDetection plugin not available (browser dev mode) - skipping setupThemeDetection');
+		return;
+	}
+
 	cordova.plugins.ThemeDetection.isDarkModeEnabled(
 		(success) => {
 			if (lastDarkMode !== success.value) {
 				if (success.value) {
 					$('#css-components').attr('href', "css/dark-onsen-css-components.min.css");
 					$('body').addClass('dark-mode');
-					StatusBar.styleLightContent();
-					if (cordova.platformId == 'android') {
-						StatusBar.backgroundColorByHexString("#000");
+					if (typeof StatusBar !== 'undefined') {
+						StatusBar.styleLightContent();
+						if (cordova.platformId == 'android') {
+							StatusBar.backgroundColorByHexString("#000");
+						}
 					}
 				} else {
 					$('#css-components').attr('href', "css/onsen-css-components.min.css");
 					$('body').removeClass('dark-mode');
-					StatusBar.styleDefault();
-					if (cordova.platformId == 'android') {
-						StatusBar.backgroundColorByHexString("#fff");
+					if (typeof StatusBar !== 'undefined') {
+						StatusBar.styleDefault();
+						if (cordova.platformId == 'android') {
+							StatusBar.backgroundColorByHexString("#fff");
+						}
 					}
 				}
 				lastDarkMode = success.value;
