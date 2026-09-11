@@ -89,7 +89,13 @@ var spotDetailsMap = {
 	dvDuration: function(spot) {
 		return ['Duration', sprintf("%.1f s", spot.dvDuration)];
 	},
-	band: 'Band',
+	band: function(spot) {
+		var band = htmlEscape(spot.band);
+		if (spot.bandIsGuessed) {
+			band += " (guessed from module)";
+		}
+		return ['Band', band];
+	},
 	frequency: 'Frequency',
 	mode: function(spot) {
 		var mode;
@@ -307,8 +313,9 @@ function formatSpots() {
 			spotTag = 'dstar';
 		}
 		
-		if (spot.source == 'dstar' || spot.frequency === undefined || spot.frequency === null) {
-			// D-STAR presence spot: no frequency/band
+		if (spot.source == 'dstar') {
+			// D-STAR presence spot: describe the reflector/node link, then append
+			// the frequency (or band, if that's all we have) when it was resolved.
 			if (spot.dvEvent == 'linked') {
 				title += " linked " + htmlEscape(spot.dvNode) + " to " + htmlEscape(spot.dvReflector);
 			} else if (spot.dvReflector) {
@@ -316,6 +323,13 @@ function formatSpots() {
 			} else if (spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvNode);
 			}
+			if (spot.frequency !== undefined && spot.frequency !== null) {
+				title += " (" + formatFrequency(spot.frequency) + " D-STAR)";
+			} else if (spot.band && spot.band != 'unknown') {
+				title += " (" + htmlEscape(spot.band) + " D-STAR)";
+			}
+		} else if (spot.frequency === undefined || spot.frequency === null) {
+			// Defensive: non-D-STAR spot missing a frequency (should not happen)
 		} else {
 			title += " (" + formatFrequency(spot.frequency);
 			if (spot.modeDetail) {
@@ -439,7 +453,7 @@ function spotDetailsHtml(spot) {
 
 	html += '<div class="muteButtons"><div class="muteTitle">Mute</div>';
 	html += '<ons-button data-mutetype="callsign" modifier="quiet">Callsign</ons-button>';
-	if (spot.band) {
+	if (spot.band && spot.band != 'unknown') {
 		html += '<ons-button data-mutetype="callsignBand" modifier="quiet">Callsign + Band</ons-button>';
 	}
 	
