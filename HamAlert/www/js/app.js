@@ -323,10 +323,10 @@ function formatSpots() {
 			} else if (spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvNode);
 			}
+			// Frequency in the headline like every other spot; nothing when the repeater's
+			// frequency is unknown (a guessed band is only shown in the details)
 			if (spot.frequency !== undefined && spot.frequency !== null) {
 				title += " (" + formatFrequency(spot.frequency) + " D-STAR)";
-			} else if (spot.band && spot.band != 'unknown') {
-				title += " (" + htmlEscape(spot.band) + " D-STAR)";
 			}
 		} else if (spot.frequency === undefined || spot.frequency === null) {
 			// Defensive: non-D-STAR spot missing a frequency (should not happen)
