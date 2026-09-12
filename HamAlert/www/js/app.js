@@ -318,8 +318,11 @@ function formatSpots() {
 			// the frequency (or band, if that's all we have) when it was resolved.
 			if (spot.dvEvent == 'linked') {
 				title += " linked " + htmlEscape(spot.dvNode) + " to " + htmlEscape(spot.dvReflector);
-			} else if (spot.dvReflector) {
+			} else if (spot.dvReflector && spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvReflector) + " via " + htmlEscape(spot.dvNode);
+			} else if (spot.dvReflector) {
+				// dstarusers.org reports hotspot/dongle users through a bare reflector, with no node
+				title += " on " + htmlEscape(spot.dvReflector);
 			} else if (spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvNode);
 			}
