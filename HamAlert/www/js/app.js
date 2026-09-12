@@ -10,6 +10,14 @@ var sounds = ['default','blip','sota','wwff','iota','rbn','dx'];
 var showingAlert = false;
 var apiBase = 'https://hamalert.org';
 
+// D-STAR presence spots (mode 'dstar') carry the feed that reported them as their source;
+// human-readable names for the Source row in the spot details (see spotDetailsHtml).
+var dstarSourceNames = {
+	quadnet: 'QuadNet',
+	ircddb: 'ircDDB',
+	dstarusers: 'dstarusers.org'
+};
+
 function isBrowserPlatform() {
 	return typeof cordova !== 'undefined' && cordova.platformId === 'browser';
 }
@@ -309,11 +317,13 @@ function formatSpots() {
 			spotTag = 'dx';
 		} else if (spot.source == 'pskreporter') {
 			spotTag = 'pskr';
-		} else if (spot.source == 'dstar') {
+		} else if (spot.mode == 'dstar') {
+			// All three D-STAR feeds (quadnet/ircddb/dstarusers) show the same "D-STAR" tag;
+			// the real feed name is shown in the Source row in the spot details instead.
 			spotTag = 'dstar';
 		}
-		
-		if (spot.source == 'dstar') {
+
+		if (spot.mode == 'dstar') {
 			// D-STAR presence spot: describe the reflector/node link, then append
 			// the frequency (or band, if that's all we have) when it was resolved.
 			if (spot.dvEvent == 'linked') {
@@ -321,7 +331,7 @@ function formatSpots() {
 			} else if (spot.dvReflector && spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvReflector) + " via " + htmlEscape(spot.dvNode);
 			} else if (spot.dvReflector) {
-				// dstarusers.org reports hotspot/dongle users through a bare reflector, with no node
+				// A dstarusers.org reflector-module report (e.g. "REF030-C") has no separate node
 				title += " on " + htmlEscape(spot.dvReflector);
 			} else if (spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvNode);
@@ -410,7 +420,7 @@ function spotSubtitleHtml(spot) {
 		if (spot.comment && spot.comment != '(null)')
 			subtitle += ": " + htmlEscape(spot.comment);
 		return subtitle;
-	} else if (spot.source == 'dstar') {
+	} else if (spot.mode == 'dstar') {
 		var parts = [];
 		if (spot.comment && spot.comment != '(null)')
 			parts.push(htmlEscape(spot.comment));
@@ -431,7 +441,13 @@ function spotDetailsHtml(spot) {
 		html += ' style="display: none"';
 	}
 	html += '><table>';
-	
+
+	// D-STAR presence spots come from three separate feeds, all tagged "D-STAR" above; show
+	// which one actually reported this spot here, the same way other sources would be labelled.
+	if (spot.mode == 'dstar') {
+		html += '<tr><th>Source</th><td>' + htmlEscape(dstarSourceNames[spot.source] || spot.source) + '</td></tr>';
+	}
+
 	if (spot.dxcc) {
 		spot.cq = spot.dxcc.cq;
 	}
