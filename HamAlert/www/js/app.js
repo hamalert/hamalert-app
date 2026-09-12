@@ -92,7 +92,17 @@ var spotDetailsMap = {
 		return ['Event', (spot.dvEvent == 'linked') ? 'Linked' : 'Active'];
 	},
 	dvNode: 'Repeater / node',
-	dvReflector: 'Reflector',
+	dvReflector: function(spot) {
+		var text = htmlEscape(spot.dvReflector);
+		// Only REF-series reflectors have pages on dstarusers.org (not XRF/DCS/XLX).
+		// The module suffix (e.g. "-C") is part of the displayed text but dropped from the URL.
+		var m = /^(REF[A-Z0-9]*)(-[A-Z])?$/.exec(spot.dvReflector.toUpperCase());
+		if (m) {
+			var url = 'https://www.dstarusers.org/viewrepeater.php?system=' + encodeURIComponent(m[1]);
+			return ['Reflector', '<a href="' + url + '">' + text + '</a>'];
+		}
+		return ['Reflector', text];
+	},
 	dvSuffix: 'Suffix',
 	dvDuration: function(spot) {
 		return ['Duration', sprintf("%.1f s", spot.dvDuration)];
