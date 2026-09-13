@@ -48,6 +48,32 @@ function initApiBase() {
 // so this can run immediately without waiting for deviceready.
 initApiBase();
 
+// Renders a D-STAR spot's repeater/node identifier (e.g. "W4HFH-C"), linking it to
+// its RepeaterBook search results by the node's callsign (module suffix stripped
+// for the URL, kept in the displayed text). No link when the node's callsign is
+// the operator's own callsign - that's a personal hotspot, not a listed repeater,
+// so RepeaterBook has nothing for it.
+function formatDvNode(spot) {
+	var node = spot.dvNode;
+	var text = htmlEscape(node);
+	if (!node) {
+		return text;
+	}
+	var nodeCallsign = node.toUpperCase().replace(/-[A-Z0-9]+$/, '');
+	var ownCallsigns = [];
+	if (spot.callsign) {
+		ownCallsigns.push(spot.callsign.toUpperCase());
+	}
+	if (spot.fullCallsign) {
+		ownCallsigns.push(spot.fullCallsign.toUpperCase().replace(/\/.*$/, ''));
+	}
+	if (ownCallsigns.indexOf(nodeCallsign) !== -1) {
+		return text;
+	}
+	var url = 'https://www.repeaterbook.com/global_repeaters/keyword.php?func=result&keyword=' + encodeURIComponent(nodeCallsign);
+	return '<a href="' + url + '">' + text + '</a>';
+}
+
 var spotDetailsMap = {
 	fullCallsign: function(spot) {
 		return ['Callsign', '<a href="https://www.qrz.com/db/' + spot.callsign + '">' + spot.fullCallsign + '</a>']
@@ -91,7 +117,9 @@ var spotDetailsMap = {
 	dvEvent: function(spot) {
 		return ['Event', (spot.dvEvent == 'linked') ? 'Linked' : 'Active'];
 	},
-	dvNode: 'Repeater / node',
+	dvNode: function(spot) {
+		return ['Repeater / node', formatDvNode(spot)];
+	},
 	dvReflector: function(spot) {
 		var text = htmlEscape(spot.dvReflector);
 		// Only REF-series reflectors have pages on dstarusers.org (not XRF/DCS/XLX).
@@ -134,7 +162,17 @@ var spotDetailsMap = {
 	cq: function(spot) {
 		return ['CQ zone', spot.dxcc.cq];
 	},
-	spotter: 'Spotter',
+	spotter: function(spot) {
+		var text = htmlEscape(spot.spotter);
+		// Only REF-series reflectors have pages on dstarusers.org (not XRF/DCS/XLX),
+		// same rule as the dvReflector formatter above.
+		var m = /^(REF[A-Z0-9]*)(-[A-Z])?$/.exec(spot.spotter.toUpperCase());
+		if (m) {
+			var url = 'https://www.dstarusers.org/viewrepeater.php?system=' + encodeURIComponent(m[1]);
+			return ['Spotter', '<a href="' + url + '">' + text + '</a>'];
+		}
+		return ['Spotter', text];
+	},
 	triggerComments: function(spot) {
 		var html = spot.triggerComments.map(function(x) {
 			return htmlEscape(x);
