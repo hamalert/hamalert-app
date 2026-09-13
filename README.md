@@ -23,7 +23,7 @@ npm install
 npm run browser-dev
 ```
 
-This adds Cordova's `browser` platform (if not already added; `platforms/` and `plugins/` are gitignored, so this never dirties the working tree) and launches the app in a Chromium window served at `http://localhost:8000`. Log in with a user from your local stack, e.g. `HB9DQM` / `testpass123`.
+This adds Cordova's `browser` platform (if not already added; `platforms/` and `plugins/` are gitignored, so this never dirties the working tree) and launches the app in a Chromium window served at `http://localhost:8000`. Log in with a user from your local stack, e.g. `N0CALL` / `testpass123`.
 
 By default browser dev mode talks to `http://localhost:8081`. To point it at a different local API origin, open the app with an `?api=` query parameter, e.g. `http://localhost:8000/?api=http://localhost:9081`. The value is remembered in `localStorage` (key `apiBase`) for next time; clear that key (or your browser's site data for the app) to reset it. You can also set the `HAMALERT_API_BASE` environment variable before running `npm run browser-dev` to have that origin pre-allowed by the browser platform's Content-Security-Policy.
 
