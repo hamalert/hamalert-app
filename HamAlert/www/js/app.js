@@ -131,6 +131,15 @@ var spotDetailsMap = {
 		}
 		return ['Reflector', text];
 	},
+	dvGroup: function(spot) {
+		// QuadNet Smart Group spots (no dvReflector) route through a group callsign
+		// (e.g. "DSTAR1") instead of a reflector. No per-group page to link to.
+		var text = htmlEscape(spot.dvGroup);
+		if (spot.dvGroupName) {
+			text = htmlEscape(spot.dvGroupName) + ' (' + text + ')';
+		}
+		return ['Group', text];
+	},
 	dvSuffix: 'Suffix',
 	dvDuration: function(spot) {
 		return ['Duration', sprintf("%.1f s", spot.dvDuration)];
@@ -381,6 +390,14 @@ function formatSpots() {
 			} else if (spot.dvReflector) {
 				// A dstarusers.org reflector-module report (e.g. "REF030-C") has no separate node
 				title += " on " + htmlEscape(spot.dvReflector);
+			} else if (spot.dvGroup && spot.dvNode) {
+				// QuadNet Smart Group spot: routing-group callsign (e.g. "DSTAR1") instead of
+				// a reflector, always with a node - the radio that reported the activity.
+				if (spot.dvGroupName) {
+					title += " on " + htmlEscape(spot.dvGroupName) + " (" + htmlEscape(spot.dvGroup) + ") via " + htmlEscape(spot.dvNode);
+				} else {
+					title += " on " + htmlEscape(spot.dvGroup) + " via " + htmlEscape(spot.dvNode);
+				}
 			} else if (spot.dvNode) {
 				title += " on " + htmlEscape(spot.dvNode);
 			}
