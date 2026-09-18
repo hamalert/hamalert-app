@@ -133,10 +133,13 @@ var spotDetailsMap = {
 	},
 	dvGroup: function(spot) {
 		// QuadNet Smart Group spots (no dvReflector) route through a group callsign
-		// (e.g. "DSTAR1") instead of a reflector. No per-group page to link to.
+		// (e.g. "DSTAR1") instead of a reflector. A group with a known name comes from
+		// QuadNet's routing group page, which lists every group and its current subscribers,
+		// so link there; an unnamed group is one the server couldn't resolve, no link.
 		var text = htmlEscape(spot.dvGroup);
 		if (spot.dvGroupName) {
 			text = htmlEscape(spot.dvGroupName) + ' (' + text + ')';
+			return ['Group', '<a href="https://www.openquad.net/starnet.php">' + text + '</a>'];
 		}
 		return ['Group', text];
 	},
