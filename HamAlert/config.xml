@@ -45,6 +45,8 @@
     <platform name="ios">
         <preference name="deployment-target" value="15.6" />
         <hook src="hooks/ios_pod_deployment_target.js" type="before_prepare" />
+        <hook src="hooks/ios_afnetworking.js" type="before_prepare" />
+        <hook src="hooks/ios_afnetworking.js" type="after_prepare" />
         <icon height="57" src="res/icon/ios/Icon.png" width="57" />
         <icon height="114" src="res/icon/ios/Icon@2x.png" width="114" />
         <icon height="40" src="res/icon/ios/Icon-40.png" width="40" />
