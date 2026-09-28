@@ -8,6 +8,71 @@ var spots = [];
 var markAllSpotsAsSeen = true;
 var sounds = ['default','blip','sota','wwff','iota','rbn','dx'];
 var showingAlert = false;
+var apiBase = 'https://hamalert.org';
+
+// D-STAR presence spots (mode 'dstar') carry the feed that reported them as their source;
+// human-readable names for the Source row in the spot details (see spotDetailsHtml).
+var dstarSourceNames = {
+	quadnet: 'QuadNet',
+	ircddb: 'ircDDB',
+	dstarusers: 'dstarusers.org'
+};
+
+function isBrowserPlatform() {
+	return typeof cordova !== 'undefined' && cordova.platformId === 'browser';
+}
+
+function initApiBase() {
+	// In browser dev mode (cordova run browser), point the app at a local
+	// HamAlert web app instance instead of the production server.
+	if (typeof cordova === 'undefined' || cordova.platformId !== 'browser') {
+		return;
+	}
+
+	var stored = localStorage.getItem('apiBase');
+	if (stored) {
+		apiBase = stored;
+	} else {
+		var match = /[?&]api=([^&]+)/.exec(window.location.search);
+		if (match) {
+			apiBase = decodeURIComponent(match[1]);
+			localStorage.setItem('apiBase', apiBase);
+		} else {
+			apiBase = 'http://localhost:8081';
+		}
+	}
+	console.log('Browser dev mode: using API base ' + apiBase);
+}
+
+// cordova.js (loaded before this script) sets cordova.platformId synchronously,
+// so this can run immediately without waiting for deviceready.
+initApiBase();
+
+// Renders a D-STAR spot's repeater/node identifier (e.g. "W4HFH-C"), linking it to
+// its RepeaterBook search results by the node's callsign (module suffix stripped
+// for the URL, kept in the displayed text). No link when the node's callsign is
+// the operator's own callsign - that's a personal hotspot, not a listed repeater,
+// so RepeaterBook has nothing for it.
+function formatDvNode(spot) {
+	var node = spot.dvNode;
+	var text = htmlEscape(node);
+	if (!node) {
+		return text;
+	}
+	var nodeCallsign = node.toUpperCase().replace(/-[A-Z0-9]+$/, '');
+	var ownCallsigns = [];
+	if (spot.callsign) {
+		ownCallsigns.push(spot.callsign.toUpperCase());
+	}
+	if (spot.fullCallsign) {
+		ownCallsigns.push(spot.fullCallsign.toUpperCase().replace(/\/.*$/, ''));
+	}
+	if (ownCallsigns.indexOf(nodeCallsign) !== -1) {
+		return text;
+	}
+	var url = 'https://www.repeaterbook.com/global_repeaters/keyword.php?func=result&keyword=' + encodeURIComponent(nodeCallsign);
+	return '<a href="' + url + '">' + text + '</a>';
+}
 
 var spotDetailsMap = {
 	fullCallsign: function(spot) {
@@ -49,11 +114,52 @@ var spotDetailsMap = {
 		}
 		return ['IOTA', htmlEscape(text)];
 	},
-	band: 'Band',
+	dvEvent: function(spot) {
+		return ['Event', (spot.dvEvent == 'linked') ? 'Linked' : 'Active'];
+	},
+	dvNode: function(spot) {
+		return ['Repeater / node', formatDvNode(spot)];
+	},
+	dvReflector: function(spot) {
+		var text = htmlEscape(spot.dvReflector);
+		// Only REF-series reflectors have pages on dstarusers.org (not XRF/DCS/XLX).
+		// The module suffix (e.g. "-C") is part of the displayed text but dropped from the URL.
+		var m = /^(REF[A-Z0-9]*)(-[A-Z])?$/.exec(spot.dvReflector.toUpperCase());
+		if (m) {
+			var url = 'https://www.dstarusers.org/viewrepeater.php?system=' + encodeURIComponent(m[1]);
+			return ['Reflector', '<a href="' + url + '">' + text + '</a>'];
+		}
+		return ['Reflector', text];
+	},
+	dvGroup: function(spot) {
+		// QuadNet Smart Group spots (no dvReflector) route through a group callsign
+		// (e.g. "DSTAR1") instead of a reflector. A group with a known name comes from
+		// QuadNet's routing group page, which lists every group and its current subscribers,
+		// so link there; an unnamed group is one the server couldn't resolve, no link.
+		var text = htmlEscape(spot.dvGroup);
+		if (spot.dvGroupName) {
+			text = htmlEscape(spot.dvGroupName) + ' (' + text + ')';
+			return ['Group', '<a href="https://www.openquad.net/starnet.php">' + text + '</a>'];
+		}
+		return ['Group', text];
+	},
+	dvSuffix: 'Suffix',
+	dvDuration: function(spot) {
+		return ['Duration', sprintf("%.1f s", spot.dvDuration)];
+	},
+	band: function(spot) {
+		var band = htmlEscape(spot.band);
+		if (spot.bandIsGuessed) {
+			band += " (guessed from module)";
+		}
+		return ['Band', band];
+	},
 	frequency: 'Frequency',
 	mode: function(spot) {
 		var mode;
-		if (spot.modeDetail) {
+		if (spot.mode == 'dstar') {
+			mode = 'D-STAR';
+		} else if (spot.modeDetail) {
 			mode = spot.modeDetail.toUpperCase();
 		} else if (spot.mode) {
 			mode = spot.mode.toUpperCase();
@@ -68,7 +174,17 @@ var spotDetailsMap = {
 	cq: function(spot) {
 		return ['CQ zone', spot.dxcc.cq];
 	},
-	spotter: 'Spotter',
+	spotter: function(spot) {
+		var text = htmlEscape(spot.spotter);
+		// Only REF-series reflectors have pages on dstarusers.org (not XRF/DCS/XLX),
+		// same rule as the dvReflector formatter above.
+		var m = /^(REF[A-Z0-9]*)(-[A-Z])?$/.exec(spot.spotter.toUpperCase());
+		if (m) {
+			var url = 'https://www.dstarusers.org/viewrepeater.php?system=' + encodeURIComponent(m[1]);
+			return ['Spotter', '<a href="' + url + '">' + text + '</a>'];
+		}
+		return ['Spotter', text];
+	},
 	triggerComments: function(spot) {
 		var html = spot.triggerComments.map(function(x) {
 			return htmlEscape(x);
@@ -124,6 +240,7 @@ ons.ready(function() {
 });
 
 document.addEventListener('deviceready', function() {
+	initApiBase();
 	setupThemeDetection();
 	setupPush();
 }, false);
@@ -260,15 +377,49 @@ function formatSpots() {
 			spotTag = 'dx';
 		} else if (spot.source == 'pskreporter') {
 			spotTag = 'pskr';
+		} else if (spot.mode == 'dstar') {
+			// All three D-STAR feeds (quadnet/ircddb/dstarusers) show the same "D-STAR" tag;
+			// the real feed name is shown in the Source row in the spot details instead.
+			spotTag = 'dstar';
 		}
-		
-		title += " (" + formatFrequency(spot.frequency);
-		if (spot.modeDetail) {
-			title += " " + spot.modeDetail.toUpperCase();
-		} else if (spot.mode) {
-			title += " " + spot.mode.toUpperCase();
+
+		if (spot.mode == 'dstar') {
+			// D-STAR presence spot: describe the reflector/node link, then append
+			// the frequency (or band, if that's all we have) when it was resolved.
+			if (spot.dvEvent == 'linked') {
+				title += " linked " + htmlEscape(spot.dvNode) + " to " + htmlEscape(spot.dvReflector);
+			} else if (spot.dvReflector && spot.dvNode) {
+				title += " on " + htmlEscape(spot.dvReflector) + " via " + htmlEscape(spot.dvNode);
+			} else if (spot.dvReflector) {
+				// A dstarusers.org reflector-module report (e.g. "REF030-C") has no separate node
+				title += " on " + htmlEscape(spot.dvReflector);
+			} else if (spot.dvGroup && spot.dvNode) {
+				// QuadNet Smart Group spot: routing-group callsign (e.g. "DSTAR1") instead of
+				// a reflector, always with a node - the radio that reported the activity.
+				if (spot.dvGroupName) {
+					title += " on " + htmlEscape(spot.dvGroupName) + " (" + htmlEscape(spot.dvGroup) + ") via " + htmlEscape(spot.dvNode);
+				} else {
+					title += " on " + htmlEscape(spot.dvGroup) + " via " + htmlEscape(spot.dvNode);
+				}
+			} else if (spot.dvNode) {
+				title += " on " + htmlEscape(spot.dvNode);
+			}
+			// Frequency in the headline like every other spot; nothing when the repeater's
+			// frequency is unknown (a guessed band is only shown in the details)
+			if (spot.frequency !== undefined && spot.frequency !== null) {
+				title += " (" + formatFrequency(spot.frequency) + " D-STAR)";
+			}
+		} else if (spot.frequency === undefined || spot.frequency === null) {
+			// Defensive: non-D-STAR spot missing a frequency (should not happen)
+		} else {
+			title += " (" + formatFrequency(spot.frequency);
+			if (spot.modeDetail) {
+				title += " " + spot.modeDetail.toUpperCase();
+			} else if (spot.mode) {
+				title += " " + spot.mode.toUpperCase();
+			}
+			title += ")";
 		}
-		title += ")";
 
 		if (lastReceivedDate && lastReceivedDate.substr(0, 10) != spot.receivedDate.substr(0, 10)) {
 			itemClass += " daychange";
@@ -337,6 +488,15 @@ function spotSubtitleHtml(spot) {
 		if (spot.comment && spot.comment != '(null)')
 			subtitle += ": " + htmlEscape(spot.comment);
 		return subtitle;
+	} else if (spot.mode == 'dstar') {
+		var parts = [];
+		if (spot.comment && spot.comment != '(null)')
+			parts.push(htmlEscape(spot.comment));
+		if (spot.dvSuffix)
+			parts.push(htmlEscape(spot.dvSuffix));
+		if (parts.length > 0)
+			return parts.join(" \u00b7 ");
+		return htmlEscape(spot.rawText);
 	} else {
 		return htmlEscape(spot.rawText);
 	}
@@ -349,7 +509,13 @@ function spotDetailsHtml(spot) {
 		html += ' style="display: none"';
 	}
 	html += '><table>';
-	
+
+	// D-STAR presence spots come from three separate feeds, all tagged "D-STAR" above; show
+	// which one actually reported this spot here, the same way other sources would be labelled.
+	if (spot.mode == 'dstar') {
+		html += '<tr><th>Source</th><td>' + htmlEscape(dstarSourceNames[spot.source] || spot.source) + '</td></tr>';
+	}
+
 	if (spot.dxcc) {
 		spot.cq = spot.dxcc.cq;
 	}
@@ -374,7 +540,9 @@ function spotDetailsHtml(spot) {
 
 	html += '<div class="muteButtons"><div class="muteTitle">Mute</div>';
 	html += '<ons-button data-mutetype="callsign" modifier="quiet">Callsign</ons-button>';
-	html += '<ons-button data-mutetype="callsignBand" modifier="quiet">Callsign + Band</ons-button>';
+	if (spot.band && spot.band != 'unknown') {
+		html += '<ons-button data-mutetype="callsignBand" modifier="quiet">Callsign + Band</ons-button>';
+	}
 	
 	if (spot.summitRef) {
 		html += '<ons-button data-mutetype="callsignSummit" modifier="quiet">Callsign + Summit</ons-button>';
@@ -482,6 +650,16 @@ function resetLogin() {
 }
 
 function setupPush() {
+	if (!window.PushNotification || isBrowserPlatform()) {
+		// The cordova-browser platform ships a PushNotification shim that
+		// tries to register a real Service Worker / Web Push subscription
+		// (and can even trigger a page reload when that fails), which isn't
+		// useful in dev mode and has no server-side counterpart here, so
+		// skip it entirely.
+		console.log('Push notifications not available (browser dev mode) - skipping setupPush');
+		return;
+	}
+
 	push = PushNotification.init({
 		"android": {
 			"senderID": "854056214480"
@@ -569,6 +747,9 @@ function setupPush() {
 }
 
 function updatePushToken() {
+	if (!window.PushNotification || isBrowserPlatform())
+		return;
+
 	var pushToken = localStorage.getItem('registrationId');
 	if (!pushToken || !loadCredentials())
 		return;
@@ -687,15 +868,15 @@ function updateTimeSettings() {
 }
 
 function goRegister() {
-	cordova.InAppBrowser.open('https://hamalert.org/register?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
+	cordova.InAppBrowser.open(apiBase + '/register?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
 }
 
 function goPrivacy() {
-	cordova.InAppBrowser.open('https://hamalert.org/privacy?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
+	cordova.InAppBrowser.open(apiBase + '/privacy?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
 }
 
 function goForgotPassword() {
-	cordova.InAppBrowser.open('https://hamalert.org/forgotpass?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
+	cordova.InAppBrowser.open(apiBase + '/forgotpass?hidenav=1', '_blank', 'location=no,zoom=no,enableViewportScale=yes,usewkwebview=yes');
 }
 
 function goTriggers() {
@@ -726,7 +907,7 @@ function goInAppBrowserWithLogin(goto) {
 	var username = localStorage.getItem('username');
 	var password = localStorage.getItem('password');
 
-	var path = 'https://hamalert.org/login?';
+	var path = apiBase + '/login?';
 	path += 'username=' + encodeURIComponent(username);
 	path += '&password=' + encodeURIComponent(password);
 	path += '&goto=' + encodeURIComponent(goto + '?hidenav=1');
@@ -770,7 +951,7 @@ function goSettings() {
 }
 
 function getDeviceName() {
-	if (cordova.plugins.deviceName)
+	if (cordova.plugins && cordova.plugins.deviceName)
 		return cordova.plugins.deviceName.name;
 	else
 		return "Unknown";
@@ -797,7 +978,7 @@ function formatTime(timeUtc) {
 }
 
 function apiGet(path, params, successCallback, errorCallback, silent) {
-	cordova.plugin.http.get('https://hamalert.org' + path, stringifyValues(params), {}, function (response) {
+	cordova.plugin.http.get(apiBase + path, stringifyValues(params), {}, function (response) {
 		if (successCallback) {
 			successCallback(JSON.parse(response.data));
 		}
@@ -825,7 +1006,7 @@ function apiGet(path, params, successCallback, errorCallback, silent) {
 }
 
 function apiPost(path, data, successCallback, errorCallback, silent) {
-	cordova.plugin.http.post('https://hamalert.org' + path, stringifyValues(data), {}, function (response) {
+	cordova.plugin.http.post(apiBase + path, stringifyValues(data), {}, function (response) {
 		if (successCallback) {
 			successCallback(JSON.parse(response.data));
 		}
@@ -876,22 +1057,31 @@ function loadCredentials() {
 
 let lastDarkMode = false;
 function setupThemeDetection() {
+	if (!cordova.plugins || !cordova.plugins.ThemeDetection) {
+		console.log('ThemeDetection plugin not available (browser dev mode) - skipping setupThemeDetection');
+		return;
+	}
+
 	cordova.plugins.ThemeDetection.isDarkModeEnabled(
 		(success) => {
 			if (lastDarkMode !== success.value) {
 				if (success.value) {
 					$('#css-components').attr('href', "css/dark-onsen-css-components.min.css");
 					$('body').addClass('dark-mode');
-					StatusBar.styleLightContent();
-					if (cordova.platformId == 'android') {
-						StatusBar.backgroundColorByHexString("#000");
+					if (typeof StatusBar !== 'undefined') {
+						StatusBar.styleLightContent();
+						if (cordova.platformId == 'android') {
+							StatusBar.backgroundColorByHexString("#000");
+						}
 					}
 				} else {
 					$('#css-components').attr('href', "css/onsen-css-components.min.css");
 					$('body').removeClass('dark-mode');
-					StatusBar.styleDefault();
-					if (cordova.platformId == 'android') {
-						StatusBar.backgroundColorByHexString("#fff");
+					if (typeof StatusBar !== 'undefined') {
+						StatusBar.styleDefault();
+						if (cordova.platformId == 'android') {
+							StatusBar.backgroundColorByHexString("#fff");
+						}
 					}
 				}
 				lastDarkMode = success.value;

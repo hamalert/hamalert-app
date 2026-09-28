@@ -1,6 +1,11 @@
 {
+  "scripts": {
+    "browser-dev": "cordova platform add browser --no-save 2>/dev/null || true; cordova run browser -- --port=8000",
+    "browser-prepare": "cordova prepare browser"
+  },
   "devDependencies": {
     "@havesource/cordova-plugin-push": "^5.0.5",
+    "cordova": "^12",
     "cordova-android": "^14.0.1",
     "cordova-browser": "^7.0.0",
     "cordova-ios": "^7.1.1",
