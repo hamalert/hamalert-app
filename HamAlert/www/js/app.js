@@ -1056,6 +1056,31 @@ function loadCredentials() {
 }
 
 let lastDarkMode = false;
+
+// cordova-android 15 draws its own status bar and picks icon color from the
+// background luminance. cordova-plugin-statusbar is still installed for iOS;
+// on Android its JS would intercept window.statusbar and paint the old window
+// status bar, which this platform no longer shows.
+function applyStatusBarTheme(isDark) {
+	if (cordova.platformId == 'android' && window.statusbar && window.statusbar.setBackgroundColor) {
+		var legacyStatusBar = window.StatusBar;
+		window.StatusBar = undefined;
+		try {
+			window.statusbar.setBackgroundColor(isDark ? '#000000' : '#ffffff');
+		} finally {
+			window.StatusBar = legacyStatusBar;
+		}
+		return;
+	}
+	if (typeof StatusBar !== 'undefined') {
+		if (isDark) {
+			StatusBar.styleLightContent();
+		} else {
+			StatusBar.styleDefault();
+		}
+	}
+}
+
 function setupThemeDetection() {
 	if (!cordova.plugins || !cordova.plugins.ThemeDetection) {
 		console.log('ThemeDetection plugin not available (browser dev mode) - skipping setupThemeDetection');
@@ -1068,21 +1093,11 @@ function setupThemeDetection() {
 				if (success.value) {
 					$('#css-components').attr('href', "css/dark-onsen-css-components.min.css");
 					$('body').addClass('dark-mode');
-					if (typeof StatusBar !== 'undefined') {
-						StatusBar.styleLightContent();
-						if (cordova.platformId == 'android') {
-							StatusBar.backgroundColorByHexString("#000");
-						}
-					}
+					applyStatusBarTheme(true);
 				} else {
 					$('#css-components').attr('href', "css/onsen-css-components.min.css");
 					$('body').removeClass('dark-mode');
-					if (typeof StatusBar !== 'undefined') {
-						StatusBar.styleDefault();
-						if (cordova.platformId == 'android') {
-							StatusBar.backgroundColorByHexString("#fff");
-						}
-					}
+					applyStatusBarTheme(false);
 				}
 				lastDarkMode = success.value;
 			}
