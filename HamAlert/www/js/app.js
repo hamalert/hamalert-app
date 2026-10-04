@@ -214,12 +214,31 @@ var spotDetailsMap = {
 	}
 };
 
-$(function() {
-	if (ons.platform.isIPhoneX()) {
-		document.documentElement.setAttribute('onsflag-iphonex-portrait', '');
-		document.documentElement.setAttribute('onsflag-iphonex-landscape', '');
-	}
-});
+// Onsen UI's isIPhoneX() is a fixed list of screen sizes and stops at the
+// iPhone 16. iPhone Air (420×912) is missing, so Onsen only reserved the old
+// 20px status bar and the toolbar drew under the status bar and camera cutout.
+// Home-button iPhones are at most 736pt tall; every taller iPhone needs the
+// safe-area toolbar inset (index.css maps that padding to env(safe-area-inset-*)).
+(function () {
+	var platform = ons.platform;
+	var originalIsIPhoneX = platform.isIPhoneX.bind(platform);
+	platform.isIPhoneX = function () {
+		if (originalIsIPhoneX()) {
+			return true;
+		}
+		if (!platform.isIPhone()) {
+			return false;
+		}
+		var shorter = Math.min(window.screen.width, window.screen.height);
+		var longer = Math.max(window.screen.width, window.screen.height);
+		return longer >= 812 && shorter >= 320;
+	};
+})();
+
+if (ons.platform.isIPhoneX()) {
+	document.documentElement.setAttribute('onsflag-iphonex-portrait', '');
+	document.documentElement.setAttribute('onsflag-iphonex-landscape', '');
+}
 
 ons.ready(function() {
 	loadCredentials();
