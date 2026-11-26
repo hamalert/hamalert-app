@@ -28,28 +28,28 @@
 					<ons-list-item id="usernameItem">
 						<span id="usernameDisplay">not logged in</span>
 					</ons-list-item>
-					<ons-list-item onclick="goTriggers()" tappable>
+					<ons-list-item onclick="goTriggers()" tappable role="button" tabindex="0">
 						Triggers
 					</ons-list-item>
-					<ons-list-item onclick="goLimits()" tappable>
+					<ons-list-item onclick="goLimits()" tappable role="button" tabindex="0">
 						Limits
 					</ons-list-item>
-					<ons-list-item onclick="goDestinations()" tappable>
+					<ons-list-item onclick="goDestinations()" tappable role="button" tabindex="0">
 						Destinations
 					</ons-list-item>
-					<ons-list-item onclick="goSettings()" tappable>
+					<ons-list-item onclick="goSettings()" tappable role="button" tabindex="0">
 						Settings
 					</ons-list-item>
-					<ons-list-item onclick="doLogout()" tappable>
+					<ons-list-item onclick="doLogout()" tappable role="button" tabindex="0">
 						Logout
 					</ons-list-item>
 				</ons-list>
 				<ons-list>
 					<ons-list-header>Support</ons-list-header>
-					<ons-list-item onclick="goSupport()" tappable>
+					<ons-list-item onclick="goSupport()" tappable role="button" tabindex="0">
 						Forum
 					</ons-list-item>
-					<ons-list-item id="githubItem" onclick="goGitHub()" tappable>
+					<ons-list-item id="githubItem" onclick="goGitHub()" tappable role="button" tabindex="0">
 						GitHub
 						<div><small>for bugs/feature requests</small></div>
 					</ons-list-item>
@@ -66,22 +66,22 @@
 		<ons-page>
 			<ons-toolbar>
 				<div class="left">
-					<ons-toolbar-button onclick="openMenu()">
-						<ons-icon icon="md-menu"></ons-icon>
+					<ons-toolbar-button onclick="openMenu()" role="button" aria-label="Menu">
+						<ons-icon icon="md-menu" aria-hidden="true"></ons-icon>
 					</ons-toolbar-button>
 				</div>
 				<div class="center">
 					<ons-if platform="android">
-						<img class="android" src="img/hamalert.png" />
+						<img class="android" src="img/hamalert.png" alt="HamAlert" />
 					</ons-if>
 					
 					<ons-if platform="ios other">
-						<img class="ios" src="img/hamalert.png" />
+						<img class="ios" src="img/hamalert.png" alt="HamAlert" />
 					</ons-if>
 				</div>
 				<div class="right">
-					<ons-toolbar-button onclick="reloadSpots()">
-						<ons-icon id="refreshIcon" icon="ion-md-refresh"></ons-icon>
+					<ons-toolbar-button onclick="reloadSpots()" role="button" aria-label="Refresh spots">
+						<ons-icon id="refreshIcon" icon="ion-md-refresh" aria-hidden="true"></ons-icon>
 					</ons-toolbar-button>
 				</div>
 			</ons-toolbar>
@@ -95,7 +95,7 @@
 				</ons-list-item>
 				<ons-list-item id="notrigger" style="display: none">
 					<div class="center">
-						<ons-icon icon="fa-exclamation-triangle"></ons-icon>
+						<ons-icon icon="fa-exclamation-triangle" aria-hidden="true"></ons-icon>
 						<div>You don't have any triggers with the “App” action enabled.</div>
 					</div>
 				</ons-list-item>
@@ -103,7 +103,7 @@
 
 			<ons-list id="deleteall" style="display: none">
 				<ons-list-item>
-					<ons-button modifier="large--quiet" onclick="deleteAllSpots()">Delete all</ons-button>
+					<ons-button modifier="large--quiet" onclick="deleteAllSpots()" role="button" tabindex="0">Delete all</ons-button>
 				</ons-list-item>
 			</ons-list>
 		</ons-page>
@@ -112,7 +112,7 @@
 	<template id="settings.html">
 		<ons-page>
 			<ons-toolbar>
-				<div class="left"><ons-back-button>Spots</ons-back-button></div>
+				<div class="left"><ons-back-button role="button" tabindex="0" aria-label="Back">Spots</ons-back-button></div>
 				<div class="center">Settings</div>
 			</ons-toolbar>
 
@@ -236,7 +236,7 @@
 					</label>
 				</ons-list-item>
 				
-				<ons-list-item id="clearMutes" tappable onclick="clearMutes()">
+				<ons-list-item id="clearMutes" tappable onclick="clearMutes()" role="button" tabindex="0">
 					<div class="center">
 						Clear mutes
 					</div>
@@ -246,7 +246,7 @@
 			<div class="list-footer">Blip sound attribution: Marianne Gagnon</div>
 
 			<ons-list style="margin-top: 1.5em">
-				<ons-list-item id="deleteAccount" tappable onclick="goDeleteAccount()">
+				<ons-list-item id="deleteAccount" tappable onclick="goDeleteAccount()" role="button" tabindex="0">
 					<div class="center">
 						Delete account
 					</div>
@@ -265,7 +265,7 @@
 				<ons-input input-id="password" modifier="underbar" type="password" placeholder="Password"></ons-input>
 			</p>
 			<p style="margin-top: 30px;">
-				<ons-button onclick="doLogin()">Login</ons-button>
+				<ons-button onclick="doLogin()" role="button" tabindex="0">Login</ons-button>
 			</p>
 			<p>
 				<a href="#" onclick="goRegister()">Create a HamAlert account</a>
@@ -281,8 +281,8 @@
 	
 	<ons-modal id="loading" direction="up">
 		<div style="text-align: center">
-			<p>
-				<ons-icon icon="md-spinner" size="28px" spin></ons-icon> Loading...
+			<p role="status">
+				<ons-icon icon="md-spinner" size="28px" spin aria-hidden="true"></ons-icon> Loading...
 			</p>
 		</div>
 	</ons-modal>

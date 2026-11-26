@@ -250,7 +250,19 @@ ons.ready(function() {
 		}
 	});
 	$(document).on('swipeleft', 'ons-list-item', function(e) {
-		$(e.target).parents('ons-list-item.spot').find('.delete').show();
+		var item = $(e.target).closest('ons-list-item.spot');
+		item.find('.delete').addClass('is-revealed');
+		item.find('.delete button').removeAttr('aria-hidden');
+	});
+	// Custom elements with role="button" are not activated by Enter/Space on their own.
+	// VoiceOver double-tap sends a click; this covers keyboard activation of the same controls.
+	$(document).on('keydown', '[role="button"]', function(e) {
+		if (e.key !== 'Enter' && e.key !== ' ')
+			return;
+		if (e.target !== this)
+			return;
+		e.preventDefault();
+		this.click();
 	});
 	
 	showAppVersion();
@@ -343,6 +355,12 @@ function reloadSpots() {
 
 function deleteSpot(id) {
 	apiPost('/api/deleteSpot', {id: id});
+}
+
+function deleteSpotRow(spotElement) {
+	var spotId = $(spotElement).data('spotid');
+	deleteSpot(spotId);
+	$(spotElement).remove();
 }
 
 function deleteAllSpots() {
@@ -444,11 +462,21 @@ function formatSpots() {
 			itemClass += " daychange";
 		}
 		lastReceivedDate = spot.receivedDate;
-		
-		spotsHtml += '<ons-list-item lock-on-drag tappable data-spotid="' + spot._id + '" class="' + itemClass + '"><div class="left spot-time"><span>' + formatTime(spot.time) + '<br /><span class="spotTag ' + spotTag + '">' + spotTag.toUpperCase() + '</span></span></div>' +
-			'<div class="center"><span class="list-item__title">' + title + '</span>' + 
-			'<span class="list-item__subtitle">' + spotSubtitleHtml(spot) + spotDetailsHtml(spot) + '</span></div>' + 
-			'<div class="right delete"><button><ons-icon icon="ion-ios-trash" size="36px"></ons-icon></button></div>' +
+
+		var detailsOpen = !!openSpotIds[spot._id];
+		var deleteLabel = 'Delete spot ' + htmlEscape(spot.fullCallsign || '');
+		// The button is only the summary. Mute, links, and Delete live outside it so
+		// VoiceOver can reach them after the row is expanded (role=button hides descendants).
+		spotsHtml += '<ons-list-item lock-on-drag tappable data-spotid="' + spot._id + '" class="' + itemClass + '">' +
+			'<div class="left spot-time"><span>' + formatTime(spot.time) + '<br /><span class="spotTag ' + spotTag + '">' + spotTag.toUpperCase() + '</span></span></div>' +
+			'<div class="center">' +
+			'<div class="spot-summary" role="button" tabindex="0" aria-expanded="' + (detailsOpen ? 'true' : 'false') + '">' +
+			'<span class="list-item__title">' + title + '</span>' +
+			'<span class="list-item__subtitle">' + spotSubtitleHtml(spot) + '</span>' +
+			'</div>' +
+			spotDetailsHtml(spot) +
+			'</div>' +
+			'<div class="right delete"><button type="button" aria-label="' + deleteLabel + '"' + (detailsOpen ? ' aria-hidden="true"' : '') + '><ons-icon icon="ion-ios-trash" size="36px" aria-hidden="true"></ons-icon></button></div>' +
 			'</ons-list-item>';
 	}
 	
@@ -471,10 +499,9 @@ function formatSpots() {
 		}
 		event.stopPropagation();
 	});
-	$('#spots ons-list-item.spot .delete button').click(function(event) {
-		var spotId = $(event.target).parents('ons-list-item.spot').data('spotid');
-		deleteSpot(spotId);
-		$(event.target).parents('ons-list-item.spot').remove();
+	$('#spots ons-list-item.spot .delete button, #spots ons-list-item.spot .deleteSpotButton').click(function(event) {
+		event.stopPropagation();
+		deleteSpotRow($(this).closest('ons-list-item.spot'));
 	});
 	$('#spots ons-list-item.spot .muteButtons ons-button').click(function(event) {
 		var spotId = $(event.target).parents('ons-list-item.spot').data('spotid');
@@ -558,16 +585,18 @@ function spotDetailsHtml(spot) {
 	html += '</table>';
 
 	html += '<div class="muteButtons"><div class="muteTitle">Mute</div>';
-	html += '<ons-button data-mutetype="callsign" modifier="quiet">Callsign</ons-button>';
+	html += '<ons-button data-mutetype="callsign" modifier="quiet" role="button" tabindex="0">Callsign</ons-button>';
 	if (spot.band && spot.band != 'unknown') {
-		html += '<ons-button data-mutetype="callsignBand" modifier="quiet">Callsign + Band</ons-button>';
+		html += '<ons-button data-mutetype="callsignBand" modifier="quiet" role="button" tabindex="0">Callsign + Band</ons-button>';
 	}
 	
 	if (spot.summitRef) {
-		html += '<ons-button data-mutetype="callsignSummit" modifier="quiet">Callsign + Summit</ons-button>';
+		html += '<ons-button data-mutetype="callsignSummit" modifier="quiet" role="button" tabindex="0">Callsign + Summit</ons-button>';
 	}
 	
-	html += '</div></div>';
+	html += '</div>';
+	html += '<div class="spotDelete"><ons-button class="deleteSpotButton" modifier="quiet" role="button" tabindex="0" aria-label="Delete spot ' + htmlEscape(spot.fullCallsign || '') + '">Delete spot</ons-button></div>';
+	html += '</div>';
 	
 	return html;
 }
@@ -583,15 +612,22 @@ function clearPushes() {
 function spotTapped(spotElement) {
 	$(spotElement).removeClass('new');
 	$(spotElement).removeAttr('tappable');
-	$(spotElement).find('.delete').hide();
+	$(spotElement).find('.delete').removeClass('is-revealed');
 	var spotId = $(spotElement).data('spotid');
+	var summary = $(spotElement).find('.spot-summary');
+	var trashButton = $(spotElement).find('.delete button');
 	
 	if (openSpotIds[spotId]) {
 		$(spotElement).find('div.spotDetails').hide();
 		delete openSpotIds[spotId];
+		summary.attr('aria-expanded', 'false');
+		trashButton.removeAttr('aria-hidden');
 	} else {
 		$(spotElement).find('div.spotDetails').show();
 		openSpotIds[spotId] = 1;
+		summary.attr('aria-expanded', 'true');
+		// The opened details include their own Delete spot button.
+		trashButton.attr('aria-hidden', 'true');
 	}
 	
 	if (seenSpotIds && seenSpotIds.indexOf(spotId) == -1) {
